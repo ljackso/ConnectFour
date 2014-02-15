@@ -48,6 +48,8 @@ The following code displays a board on the screen:
 > showPlayer X		=  'X'
 
 
+This is the start of our code;
+
 Test Start Board
 
 > test :: Board
