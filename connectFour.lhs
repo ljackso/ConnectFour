@@ -1,7 +1,7 @@
 G52AFP Coursework 1 - Connect Four
    
-Your full name(s)
-Your full email address(es)
+Luke Jackson : psylj1@nottingham.ac.uk
+Miles Plaskett : / Add email Millez08/
 
 ----------------------------------------------------------------------
 
@@ -49,5 +49,24 @@ The following code displays a board on the screen:
 
 ----------------------------------------------------------------------
 
+-- Returns a row
+getRow :: Board -> Int -> Row
+getRow b r = b !! r
 
+--Returns a column in the same format as a row 
+getColumn :: Board -> Int -> Row
+getColumn bs r = [ b !! r | b <- bs ]
 
+-- Gives the row that you would add a new player if you were to drop on column c 
+nextAvailableSpace :: Board -> Int -> Int
+nextAvailableSpace b c = (highestPlayer (getColumn b c)) - 1
+
+-- Gets the position of the highest player in the column, the first occurrence of a player in a column
+highestPlayer :: Row -> Int
+highestPlayer [] = rows
+highestPlayer (c:cs) = if positionIsEmpty c then highestPlayer cs else (rows - (length (c:cs)))
+
+-- Says whether a position is empty
+positionIsEmpty :: Player -> Bool
+positionIsEmpty B = True
+positionIsEmpty _ = False
