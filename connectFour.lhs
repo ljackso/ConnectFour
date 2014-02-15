@@ -1,7 +1,7 @@
 G52AFP Coursework 1 - Connect Four
    
 Luke Jackson : psylj1@nottingham.ac.uk
-Miles Plaskett : / Add email Millez08/
+Miles Plaskett : / Add email Millez08@wow.suchco.manyuk/
 
 ----------------------------------------------------------------------
 
@@ -91,6 +91,34 @@ Says whether a position is empty:
 > positionIsEmpty :: Player -> Bool
 > positionIsEmpty B = True
 > positionIsEmpty _ = False
+
+
+Add a new player to the board takes the given board and returns a new board with the added player, p
+at the given column, c:
+
+> addPlayerToBoard :: Board -> Int -> Player-> Board
+> addPlayerToBoard b c p = take (nextAvailableSpace b c) b ++ [r] ++ drop ((nextAvailableSpace b c) + 1) b
+>                           where r = addPlayerToRow (getRow b (nextAvailableSpace b c)) c p
+
+Add a new player to a row at postion c:
+
+> addPlayerToRow :: Row  -> Int -> Player -> Row
+> addPlayerToRow r c p = take c r ++ [p] ++ drop (c + 1) r
+
+
+Create a blank board:
+
+> createEmptyBoard :: Int -> Int -> Board 
+> createEmptyBoard 0 c = [] 
+> createEmptyBoard r c = [createEmptyRow c] ++ createEmptyBoard (r-1) c 
+
+
+Create a blank row:
+
+> createEmptyRow :: Int -> Row
+> createEmptyRow 0 = [] 
+> createEmptyRow r = [B] ++ createEmptyRow (r-1)
+ 
 
 
 ----------------------------------------------------------------------
