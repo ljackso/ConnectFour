@@ -47,26 +47,53 @@ The following code displays a board on the screen:
 > showPlayer B		=  '.'
 > showPlayer X		=  'X'
 
+
+Test Start Board
+
+> test :: Board
+> test = [[B, B, B, B, B, B, B ],
+>         [B, B, B, B, B, B, B ],
+>         [B, B, B, B, B, B, B ],
+>         [B, B, B, X, X, B, B ],
+>         [B, B, O, O, X, B, B ],
+>         [B, O, O, X, X, X ,O ]]
+
+
+Returns a row, 0 is the top then increments down:
+
+> getRow :: Board -> Int -> Row
+> getRow b r = b !! r
+
+
+Returns a column in the same format as a row, 0 is the left column the increments across: 
+
+> getColumn :: Board -> Int -> Row
+> getColumn bs r = [ b !! r | b <- bs ]
+
+
+Gives the row that you would add a new player if you were to drop on column c: 
+
+> nextAvailableSpace :: Board -> Int -> Int
+> nextAvailableSpace b c = (highestPlayer (getColumn b c)) - 1
+
+
+Gets the position of the highest player in the column, the first occurrence of a player in a column:
+
+> highestPlayer :: Row -> Int
+> highestPlayer [] = rows
+> highestPlayer (c:cs) = if positionIsEmpty c then highestPlayer cs else (rows - (length (c:cs)))
+
+
+Says whether a position is empty:
+
+> positionIsEmpty :: Player -> Bool
+> positionIsEmpty B = True
+> positionIsEmpty _ = False
+
+
 ----------------------------------------------------------------------
 
--- Returns a row
-getRow :: Board -> Int -> Row
-getRow b r = b !! r
 
---Returns a column in the same format as a row 
-getColumn :: Board -> Int -> Row
-getColumn bs r = [ b !! r | b <- bs ]
 
--- Gives the row that you would add a new player if you were to drop on column c 
-nextAvailableSpace :: Board -> Int -> Int
-nextAvailableSpace b c = (highestPlayer (getColumn b c)) - 1
 
--- Gets the position of the highest player in the column, the first occurrence of a player in a column
-highestPlayer :: Row -> Int
-highestPlayer [] = rows
-highestPlayer (c:cs) = if positionIsEmpty c then highestPlayer cs else (rows - (length (c:cs)))
 
--- Says whether a position is empty
-positionIsEmpty :: Player -> Bool
-positionIsEmpty B = True
-positionIsEmpty _ = False
