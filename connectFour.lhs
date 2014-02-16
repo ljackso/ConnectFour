@@ -61,6 +61,11 @@ Test Start Board
 >         [B, O, O, X, X, X ,O ]]
 
 
+Creates an Empty Board to start he game 
+
+> board :: Board 
+> board = createEmptyBoard rows cols
+
 Returns a row, 0 is the top then increments down:
 
 > getRow :: Board -> Int -> Row
