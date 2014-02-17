@@ -50,7 +50,7 @@ The following code displays a board on the screen:
 
 This is the start of our code;
 
-Test Start Board
+Various Test Boards
 
 > test :: Board
 > test = [[B, B, B, B, B, B, B ],
@@ -59,12 +59,41 @@ Test Start Board
 >         [B, B, B, X, X, B, B ],
 >         [B, B, O, O, X, B, B ],
 >         [B, O, O, X, X, X ,O ]]
-
+>
+> testWinningRow :: Board
+> testWinningRow = [[B, B, B, B, B, B, B ],
+>                  [B, B, B, B, B, B, B ],
+>                  [B, B, B, B, B, B, B ],
+>                  [B, B, B, X, X, B, B ],
+>                  [O, O, O, O, X, B, B ],
+>                  [X, O, O, X, X, X ,O ]]
+>
+> testWinningCol :: Board
+> testWinningCol = [[B, B, B, B, B, B, B ],
+>                  [B, B, B, B, B, B, B ],
+>                  [B, O, B, B, B, B, B ],
+>                  [B, O, B, X, X, B, B ],
+>                  [B, O, O, O, X, B, B ],
+>                  [X, O, O, X, X, X ,O ]]
 
 Creates an Empty Board to start he game 
 
 > board :: Board 
 > board = createEmptyBoard rows cols
+
+
+Create a blank board:
+
+> createEmptyBoard :: Int -> Int -> Board 
+> createEmptyBoard 0 c = [] 
+> createEmptyBoard r c = [createEmptyRow c] ++ createEmptyBoard (r-1) c 
+
+
+Create a blank row:
+
+> createEmptyRow :: Int -> Row
+> createEmptyRow 0 = [] 
+> createEmptyRow r = [B] ++ createEmptyRow (r-1)
 
 Returns a row, 0 is the top then increments down:
 
@@ -111,19 +140,79 @@ Add a new player to a row at postion c:
 > addPlayerToRow r c p = take c r ++ [p] ++ drop (c + 1) r
 
 
-Create a blank board:
+CHECKING FOR WIN
+Test this using the three test boards, for row, col and diagonal wins
 
-> createEmptyBoard :: Int -> Int -> Board 
-> createEmptyBoard 0 c = [] 
-> createEmptyBoard r c = [createEmptyRow c] ++ createEmptyBoard (r-1) c 
+Check for win in a single row, if returns B then is not winning if return X or O is that player who wins
+
+> winningRow :: Row -> Player
+> winningRow (r:rs) =  if (sameList xs) && (length xs == win) then r 
+>                      else
+>                           if (length xs < win) then B
+>                           else winningRow rs  
+>                      where
+>                           xs = take win (r:rs)
+
+Check all elements in a list are the same
+
+> sameList :: Row -> Bool
+> sameList [_] = True 
+> sameList (r:rs) = if (r == head rs) && (r /= B) then sameList rs else False 
 
 
-Create a blank row:
+Check entire board for winning row
 
-> createEmptyRow :: Int -> Row
-> createEmptyRow 0 = [] 
-> createEmptyRow r = [B] ++ createEmptyRow (r-1)
- 
+> winningRowInBoard :: Board -> Player
+> winningRowInBoard [] = B
+> winningRowInBoard b = if elem O xs then O
+>                           else 
+>                               if elem X xs then X
+>                               else B
+>                           where 
+>                               xs = [ winningRow (getRow b n) | n <- [0..(rows-1)]]
+
+
+Check entire board for winning col
+
+> winningColInBoard :: Board -> Player
+> winningColInBoard b = if elem O xs then O
+>                       else 
+>                           if elem X xs then X
+>                           else B
+>                       where 
+>                           xs = [ winningRow (getColumn b n) | n <- [0..(cols-1)]]
+
+TODO
+Check entire board for diagonals 
+
+>
+>
+
+Check board for any winning things
+
+> winningBoard :: Board -> Player
+> winningBoard b = if r /= B then r 
+>                  else 
+>                       if c /= B then c
+>                       else B
+>                   where 
+>                       r = winningRowInBoard b
+>                       c = winningColInBoard b
+
+ACTUALLY PLAYING THE GAME 
+
+Shows the board then listens to user column num to drop in new player 
+
+> main :: IO()
+> main = runGame test
+>
+> runGame :: Board -> IO()
+> runGame b = do 
+>               showBoard b            
+>               putStrLn "Enter column number: "
+>               col <- getLine
+>               runGame (addPlayerToBoard b (read col :: Int) X)
+
 
 
 ----------------------------------------------------------------------
