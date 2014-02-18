@@ -204,14 +204,54 @@ ACTUALLY PLAYING THE GAME
 Shows the board then listens to user column num to drop in new player 
 
 > main :: IO()
-> main = runGame test
+> main = do
+>           putStrLn "Welcome to the connect 4 Game!"
+>           putStrLn "-------------------------------"
+>           putStrLn "The computer is O and you are X"
+>           putStrLn "The computer goes first "
+>           runGame board 
+>           
+>           
 >
 > runGame :: Board -> IO()
-> runGame b = do 
->               showBoard b            
->               putStrLn "Enter column number: "
->               col <- getLine
->               runGame (addPlayerToBoard b (read col :: Int) X)
+> runGame b = do
+>               if (wc /= B) then
+>                   putStrLn ("Well done you beat some plastic and metal!")
+>               else
+>                   do
+>                       putStrLn "Computers Turn : " 
+>                       showBoard cmpb
+>                       if (cmpwb /= B) then
+>                           putStrLn ("You got beat by something without a soul")
+>                       else
+>                           do 
+>                               putStrLn "Your Turn" 
+>                               putStrLn "Enter column number: "
+>                               col <- getLine
+>                               showBoard (addPlayerToBoard cmpb (read col :: Int) X)
+>                               runGame (addPlayerToBoard cmpb (read col :: Int) X)
+>               where
+>                   cmpb = computerTurn b
+>                   wc = (winningBoard b)
+>                   cmpwb = (winningBoard cmpb)
+
+
+THE AI
+
+Gives back a board with a new O player added by the comp:
+
+> computerTurn :: Board -> Board 
+> computerTurn b = addPlayerToBoard b c O
+>                   where
+>                       c = choseColAI b
+
+
+Gives back a the best suited col to drop a O
+
+> choseColAI :: Board -> Int
+> choseColAI (b:bs) = 3
+
+             
 
 
 
