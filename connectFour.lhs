@@ -182,11 +182,34 @@ Check entire board for winning col
 >                       where 
 >                           xs = [ winningRow (getColumn b n) | n <- [0..(cols-1)]]
 
-TODO
-Check entire board for diagonals 
 
+Check entire board for diagonals
+
+> winningDiagInBoard :: Board -> Player
+> winningDiagInBoard b = if r == B then l else r
+>                           where
+>                               l = winningColInBoard (getDiagBoardLeft b)
+>                               r = winningColInBoard (getDiagBoardRight b)
+
+
+Gets a board that helps uus get diagonals
+
+> getDiagBoardRight :: Board -> Board
+> getDiagBoardRight b = [ (getListOfB rn) ++ (getRow b rn)| rn <- [0..botRow]]
+>                   where
+>                       botRow = (rows - 1)
 >
->
+> getDiagBoardLeft :: Board -> Board
+> getDiagBoardLeft b = [ (getListOfB (rows - rn)) ++ (getRow b rn)| rn <- [0..botRow]]
+>                   where
+>                       botRow = (rows - 1)
+
+
+Get list of Bs of size n
+
+> getListOfB :: Int -> Row
+> getListOfB n = [ B | b <- [1..n]]
+
 
 Check board for any winning things
 
@@ -210,8 +233,6 @@ Shows the board then listens to user column num to drop in new player
 >           putStrLn "The computer is O and you are X"
 >           putStrLn "The computer goes first "
 >           runGame board 
->           
->           
 >
 > runGame :: Board -> IO()
 > runGame b = do
@@ -251,9 +272,24 @@ Gives back a the best suited col to drop a O
 > choseColAI :: Board -> Int
 > choseColAI (b:bs) = 3
 
-             
+
+Gets a list of all possible boards given the current board and player turn
+
+> getAllPossibleBoards :: Board -> Player -> [Board]
+> getAllPossibleBoards b p = [ addPlayerToBoard b c p | c <- getNonEmptyCols b]
 
 
+Gets a list of all columns that aren't full
+
+> getNonEmptyCols :: Board -> [Int]
+> getNonEmptyCols b = [ c | c <- [0..(cols - 1)], isColumnNotFull b c]
+
+
+Check if a column is full
+
+> isColumnNotFull :: Board -> Int -> Bool
+> isColumnNotFull b c = if elem B col then True else False
+>                       where col = getColumn b c
 
 ----------------------------------------------------------------------
 
