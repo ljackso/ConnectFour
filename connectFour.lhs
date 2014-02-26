@@ -1,9 +1,12 @@
 G52AFP Coursework 1 - Connect Four
    
 Luke Jackson : psylj1@nottingham.ac.uk
-Miles Plaskett : / Add email Millez08@wow.suchco.manyuk/
+Miles Plaskett : psymp2@nottingham.ac.uk
 
 ----------------------------------------------------------------------
+
+> --import System.Random
+> --import System.IO.Unsafe
 
 For flexibility, we define constants for the row and column size of the
 board, length of a winning sequence, and search depth for the game tree:
@@ -18,7 +21,7 @@ board, length of a winning sequence, and search depth for the game tree:
 > win			=  4
 >
 > depth			:: Int
-> depth			=  6
+> depth			=  4
 
 The board itself is represented as a list of rows, where each row is
 a list of player values, subject to the above row and column sizes:
@@ -58,7 +61,7 @@ Various Test Boards
 >         [B, B, B, B, B, B, B ],
 >         [B, B, B, X, X, B, B ],
 >         [B, B, O, O, X, B, B ],
->         [B, O, O, X, X, X ,O ]]
+>         [O, O, O, X, X, X ,O ]]
 >
 > testWinningRow :: Board
 > testWinningRow = [[B, B, B, B, B, B, B ],
@@ -75,6 +78,30 @@ Various Test Boards
 >                  [B, O, B, X, X, B, B ],
 >                  [B, O, O, O, X, B, B ],
 >                  [X, O, O, X, X, X ,O ]]
+>
+> testWinningDia :: Board
+> testWinningDia = [[B, B, B, B, B, B, B ],
+>                  [B, B, B, B, B, B, B ],
+>                  [B, B, B, X, B, B, B ],
+>                  [B, B, X, O, B, B, B ],
+>                  [B, X, X, O, B, B, B ],
+>                  [X, O, O, O, X, B, B ]]
+>
+> testWinningDi2 :: Board
+> testWinningDi2 = [[B, B, B, B, B, B, B ],
+>                  [B, B, B, B, B, B, B ],
+>                  [B, B, B, O, B, B, B ],
+>                  [B, B, B, X, O, B, B ],
+>                  [B, X, X, O, X, O, B ],
+>                  [X, O, O, O, X, X, O ]]
+>
+> testWinningDi3 :: Board
+> testWinningDi3 = [[B, B, B, B, B, B, B ],
+>                  [B, B, B, B, B, B, B ],
+>                  [B, B, B, B, X, B, B ],
+>                  [B, B, B, X, O, B, B ],
+>                  [B, B, X, O, X, B, B ],
+>                  [X, X, O, O, X, O, O ]]
 
 Creates an Empty Board to start he game 
 
@@ -200,7 +227,7 @@ Gets a board that helps uus get diagonals
 >                       botRow = (rows - 1)
 >
 > getDiagBoardLeft :: Board -> Board
-> getDiagBoardLeft b = [ (getListOfB (rows - rn)) ++ (getRow b rn)| rn <- [0..botRow]]
+> getDiagBoardLeft b = [ (getListOfB (botRow - rn)) ++ (getRow b rn)| rn <- [0..botRow]]
 >                   where
 >                       botRow = (rows - 1)
 
@@ -217,10 +244,13 @@ Check board for any winning things
 > winningBoard b = if r /= B then r 
 >                  else 
 >                       if c /= B then c
->                       else B
+>                       else
+>                           if d /= B then d
+>                           else B
 >                   where 
 >                       r = winningRowInBoard b
 >                       c = winningColInBoard b
+>                       d = winningDiagInBoard b
 
 ACTUALLY PLAYING THE GAME 
 
@@ -236,7 +266,7 @@ Shows the board then listens to user column num to drop in new player
 >
 > runGame :: Board -> IO()
 > runGame b = do
->               if (wc /= B) then
+>               if (wb /= B) then
 >                   putStrLn ("Well done you beat some plastic and metal!")
 >               else
 >                   do
@@ -253,7 +283,7 @@ Shows the board then listens to user column num to drop in new player
 >                               runGame (addPlayerToBoard cmpb (read col :: Int) X)
 >               where
 >                   cmpb = computerTurn b
->                   wc = (winningBoard b)
+>                   wb = (winningBoard b)
 >                   cmpwb = (winningBoard cmpb)
 
 
@@ -269,8 +299,35 @@ Gives back a board with a new O player added by the comp:
 
 Gives back a the best suited col to drop a O
 
-> choseColAI :: Board -> Int
-> choseColAI (b:bs) = 3
+> choseColAI :: Board -> Int 
+> --choseColAI b = (moves !! unsafePerformIO (randomRIO (0, l-1)))
+> choseColAI b = (moves !! (l `div` 2))
+>                   where moves = bestMoves b
+>                         l = length moves
+
+
+Run the minimax algorithm
+
+> bestMoves :: Board -> [Int]
+> bestMoves b = [ (getNonEmptyCols b) !! i | i <- indexes ]
+>               where minimaxArray = [ minimax board (depth-1) | board <- getAllPossibleBoards b O ]
+>                     maxi = maximum minimaxArray
+>                     indexes = indexOf maxi minimaxArray
+
+> minimax :: Board -> Int -> Int
+> minimax b d = if (d == 0) || (wb /= B) || (isBoardFull b) then
+>                   if wb == O then 1
+>                   else if wb == X then -1
+>                   else 0
+>               else
+>                   if p == O then
+>                       maximum minimaxArray
+>                   else
+>                       minimum minimaxArray
+>               where
+>                   p = playerTurn b
+>                   wb = winningBoard b
+>                   minimaxArray = [ minimax board (d-1) | board <- getAllPossibleBoards b p ]
 
 
 Gets a list of all possible boards given the current board and player turn
@@ -291,7 +348,32 @@ Check if a column is full
 > isColumnNotFull b c = if elem B col then True else False
 >                       where col = getColumn b c
 
+
+Check if board is full
+
+> isBoardFull :: Board -> Bool
+> isBoardFull b = countEmptySpaces b == 0
+
+
+Get the current player turn
+
+> playerTurn :: Board -> Player
+> playerTurn b = if even (rows*cols - (countEmptySpaces b)) then O else X
+
+
+Count the total empty spaces on the board
+
+> countEmptySpaces :: Board -> Int
+> countEmptySpaces b = sum [1 | r <- b, p <- r, p == B]
+
+
+Get all indexes of an element in an array
+
+> indexOf :: Int -> [Int] -> [Int]
+> indexOf i arr = [ x | x <- [0..(length arr -1)], arr !! x == i ]
+
 ----------------------------------------------------------------------
+
 
 
 
