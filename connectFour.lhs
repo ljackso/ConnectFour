@@ -265,26 +265,54 @@ Shows the board then listens to user column num to drop in new player
 >           runGame board 
 >
 > runGame :: Board -> IO()
-> runGame b = do
->               if (wb /= B) then
->                   putStrLn ("Well done you beat some plastic and metal!")
->               else
+> runGame b =   if winningBoard b /= B then
 >                   do
->                       putStrLn "Computers Turn : " 
->                       showBoard cmpb
->                       if (cmpwb /= B) then
->                           putStrLn ("You got beat by something without a soul")
->                       else
->                           do 
->                               putStrLn "Your Turn" 
->                               putStrLn "Enter column number: "
->                               col <- getLine
->                               showBoard (addPlayerToBoard cmpb (read col :: Int) X)
->                               runGame (addPlayerToBoard cmpb (read col :: Int) X)
->               where
->                   cmpb = computerTurn b
->                   wb = (winningBoard b)
->                   cmpwb = (winningBoard cmpb)
+>                       showBoard b
+>                       putStrLn "Player is the winner !"
+>               else 
+>                   if currentPlayer b == X then 
+>                       do
+>                           showBoard b
+>                           putStrLn "Your Turn"
+>                           putStrLn "Enter a valid Column : "
+>                           col <- getLine
+>                           runGame (playerTurn b col)
+>                   else
+>                       do
+>                           showBoard b
+>                           putStrLn "Computers Turn" 
+>                           runGame (computerTurn b)            
+>               
+>
+> playerTurn :: Board -> String -> Board
+> playerTurn b col =    if (validCol col b) then (addPlayerToBoard b (asInt col) X)
+>                       else b  
+
+
+checks input is valid 
+
+> validCol :: String -> Board -> Bool
+> validCol i b =    if isInt i then 
+>                       if (asInt i) >= 0 && (asInt i) < cols then
+>                           if isColumnNotFull b (asInt i) then True
+>                           else False
+>                       else False
+>                   else False
+>
+
+
+check if a value is an Int
+
+> isInt :: String -> Bool
+> isInt s = case reads s :: [(Integer, String)] of
+>               [(_, "")] -> True
+>               _         -> False 
+
+
+getString as an Int
+
+> asInt :: String -> Int
+> asInt s = (read s :: Int)
 
 
 THE AI
@@ -293,8 +321,8 @@ Gives back a board with a new O player added by the comp:
 
 > computerTurn :: Board -> Board 
 > computerTurn b = addPlayerToBoard b c O
->                   where
->                       c = choseColAI b
+>                       where
+>                           c = choseColAI b
 
 
 Gives back a the best suited col to drop a O
@@ -305,6 +333,7 @@ Gives back a the best suited col to drop a O
 >                   where moves = bestMoves b
 >                         l = length moves
 
+ODL AI
 
 Run the minimax algorithm
 
@@ -325,9 +354,28 @@ Run the minimax algorithm
 >                   else
 >                       minimum minimaxArray
 >               where
->                   p = playerTurn b
+>                   p = currentPlayer b
 >                   wb = winningBoard b
 >                   minimaxArray = [ minimax board (d-1) | board <- getAllPossibleBoards b p ]
+
+NEW AI
+
+A data type for working with trees
+
+> data Tree a = Node a [Tree a]
+
+
+Gets an infintely large tree with
+
+> getLargeTree :: Board -> Tree a
+> getLargeTree b = Node b [getLargeTree nb | nb <- getAllPossibleBoards b (currentPlayer b)]
+
+
+Prunes the big tree
+
+> pruneTree :: Tree a -> Int -> Tree a
+> pruneTree t d = 
+> 
 
 
 Gets a list of all possible boards given the current board and player turn
@@ -357,8 +405,8 @@ Check if board is full
 
 Get the current player turn
 
-> playerTurn :: Board -> Player
-> playerTurn b = if even (rows*cols - (countEmptySpaces b)) then O else X
+> currentPlayer :: Board -> Player
+> currentPlayer b = if even (rows*cols - (countEmptySpaces b)) then O else X
 
 
 Count the total empty spaces on the board
