@@ -1,8 +1,3 @@
-G52AFP Coursework 1 - Connect Four
-   
-Luke Jackson    : psylj1@nottingham.ac.uk
-Miles Plaskett  : psymp2@nottingham.ac.uk
-
 ----------------------------------------------------------------------
 
 > import System.IO
