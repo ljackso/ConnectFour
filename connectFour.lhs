@@ -1,5 +1,3 @@
-----------------------------------------------------------------------
-
 > import System.IO
 > import System.IO.Unsafe
 > import System.Random
@@ -48,10 +46,6 @@ The following code displays a board on the screen:
 > showPlayer X		=  'X'
 
 ----------------------------------------------------------------------
-
-This is the start of our code;
-
------------------------------------------------------------------------
 
 BUILDING A BOARD
 
