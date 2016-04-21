@@ -38,12 +38,6 @@ a blank representing a position on the board that is not yet occupied:
 > data Player					=  O | B | X
 > 			   						deriving (Ord, Eq, Show)
 
-> aiPlayer						:: Player
-> aiPlayer						= O
-
-> realPlayer					:: Player 
-> realPlayer 					= X
-
 The following code displays a board on the screen:
 	
 > showBoard						:: Board -> IO ()
@@ -60,7 +54,7 @@ The following code displays a board on the screen:
 
 ------------------------------------------------------------------------------------------------------------------
 
- BUILDING AND ADDING TO A BOARD
+ BUILDING AND MANIOULATING A BOARD
 
 ------------------------------------------------------------------------------------------------------------------
 
@@ -134,7 +128,7 @@ Add a new player to a row at postion c:
 
 ------------------------------------------------------------------------------------------------------------------
 
-	CHECKING FOR A WIN
+	CHECKING FOR A WINNING BOARD
 
 ------------------------------------------------------------------------------------------------------------------
 
@@ -239,18 +233,18 @@ Check board for any winning things
 
 ------------------------------------------------------------------------------------------------------------------
 
-Shows the board then listens to user column num to drop in new player, O is computer and goes first. 
+A title message explaingin how to run the game
 
 > main 							:: IO()
 > main 							= do
 >           						putStrLn ""
->           						putStrLn "Welcome to the connect 4 Game!"
->           						putStrLn "-------------------------------"
->           						putStrLn "The computer is O and you are X"
->           						putStrLn "The computer always goes first "
->           						putStrLn "Call runGameMinMax to play against a min max AI"
->           						putStrLn "Call runGameMonteCarlo to play against a Monte Carlo AI"
->           						putStrLn "Call aiDeathMatch to watch the AI's battle it out (O will be Min Max and X Monte Carlo)"
+>           						putStrLn "	Welcome to the connect 4 Game!"
+>           						putStrLn "	-------------------------------"
+>           						putStrLn "	The computer is O and you are X"
+>           						putStrLn "	The computer always goes first "
+>           						putStrLn "	Call runGameMinMax to play against a min max AI"
+>           						putStrLn "	Call runGameMonteCarlo to play against a Monte Carlo AI"
+>           						putStrLn "	Call aiDeathMatch to watch the AI's battle it out (O will be Min Max and X Monte Carlo)"
 >           						putStrLn ""
 
 
@@ -282,36 +276,18 @@ A Generic message if it's a draw
 Run the game against minimax AI 
 
 > runGameMinMax 				:: IO()          						 
-> runGameMinMax 				= runGameMM board
-
-> runGameMM 					:: Board -> IO()
-> runGameMM b 					=   if winningBoard b /= B then
->										endGameMessage b
->               					else
->                   					if isBoardFull b then
->											drawMessage b
->                  						else   
->                      						if currentPlayer b == X then 
->                          						do
->              	           		     				showBoard b
->                          	    	 				putStrLn "Your Turn"
->                               					putStrLn "Enter a valid Column : "
->                               					col <- getLine
->                               					runGameMM (playerTurn b col)
->                       					else
->                           					do
->                               					showBoard b
->                               					putStrLn "Min Max Turn" 
->                               					runGameMM (computerTurnMM b)            
+> runGameMinMax 				= runGame board choseColMinMaxAI      
 
 
 Run the game against the monte carlo AI
 
 > runGameMonteCarlo 			:: IO()
-> runGameMonteCarlo				= runGameMC board
+> runGameMonteCarlo				= runGame board choseColMCAI
 
-> runGameMC 					:: Board -> IO()
-> runGameMC b 					=   if winningBoard b /= B then
+Run Game with a player. Shows the board then listens to user column number to drop in new player, O is computer and goes first. 
+
+> runGame 						:: Board -> (Board -> Int) -> IO ()
+> runGame b fun					=   if winningBoard b /= B then
 >										endGameMessage b
 >               					else
 >                   					if isBoardFull b then
@@ -323,14 +299,14 @@ Run the game against the monte carlo AI
 >                          	    	 				putStrLn "Your Turn"
 >                               					putStrLn "Enter a valid Column : "
 >                               					col <- getLine
->                               					runGameMC (playerTurn b col)
+>                               					runGame (playerTurn b col) fun 
 >                       					else
 >                           					do
 >                               					showBoard b
 >                               					putStrLn "Monte Carlos Turn" 
->                               					runGameMC (computerTurnMC b) 
+>                               					runGame (computerTurn fun b) fun
 
-Run the game with both AI's playin
+Run the game with both AI' s playin
 
 > aiDeathMatch 					:: IO()
 > aiDeathMatch					= runGameDM board
@@ -346,12 +322,12 @@ Run the game with both AI's playin
 >                          						do
 >                               					showBoard b
 >                               					putStrLn "Monte Carlos Turn" 
->                               					runGameDM (computerTurnMC b)
+>                               					runGameDM (computerTurn choseColMCAI b)
 >                       					else
 >                           					do
 >                               					showBoard b
 >                               					putStrLn "Min Max Turn" 
->                               					runGameDM (computerTurnMM b)                            
+>                               					runGameDM (computerTurn choseColMinMaxAI b)                            
 
 Handles the players turn
 
@@ -389,17 +365,12 @@ getString as an Int
 
 ------------------------------------------------------------------------------------------------------------------
 
-Gives back a board with a new O player added by the computer,
+Gives back a board with a new AI player added to the board, must pass in the AI Function you wish to use
 
-> computerTurnMM 				:: Board -> Board 
-> computerTurnMM b 				= addPlayerToBoard b c (currentPlayer b)
->                       				where
->                           				c = choseColMinMaxAI b
-	
-> computerTurnMC 				:: Board -> Board 
-> computerTurnMC b 				= addPlayerToBoard b c (currentPlayer b)
->                       			where
->                           			c = choseColMCAI b
+> computerTurn 					:: (Board -> Int) -> Board -> Board
+> computerTurn fun b 			= addPlayerToBoard b c (currentPlayer b)
+>									where
+>										c = fun b
 
 
 ------------------------------------------------------------------------------------------------------------------
@@ -513,16 +484,18 @@ Count the total empty spaces on the board
 > countEmptySpaces b 			= sum [1 | r <- b, p <- r, p == B]
 
 
-Get all indexes of an element in an array
+Get all indexes of an element in an list
 
 > indexOf 						:: Int -> [Int] -> [Int]
-> indexOf i arr 				= [ x | x <- [0..(length arr -1)], arr !! x == i ]
+> indexOf i lis 				= [ x | x <- [0..(length lis -1)], lis !! x == i ]
 
 ----------------------------------------------------------------------
 
 	MONTECARLO SIMULATIONS AI
 
 ----------------------------------------------------------------------
+
+Define the amount of simulations you want to run each turn
 
 > maxNumberSimulations 			:: Int
 > maxNumberSimulations 			= 1000
@@ -555,7 +528,6 @@ Simulate a game untill you have a result. Start by including the intial start po
 >										winner 
 >												where 
 >													winner = winningBoard b
-
 
 ----------------------------------------------------------------------
 
